@@ -1,12 +1,16 @@
 "use strict";
 
-var http = require('http');
-var portfinder = require('portfinder');
-var ip      = require('ip');
+let http = require('http');
+let portfinder = require('portfinder');
+let ip = require('ip');
+let util = require('util');
+let events = require('events');
 
-function Subscription(host, port, eventSub, callback) {
-  var sid, resubscribeInterval, timeoutSeconds = 1800, httpSubscriptionResponseServer;
-  this.unsubscribe = function() {
+function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
+  let sid, resubscribeInterval, httpSubscriptionResponseServer, emitter, timeoutSeconds = requestedTimeoutSeconds || 1800;
+  events.EventEmitter.call(this);
+  emitter = this;
+  this.unsubscribe = function unsubscribe() {
     clearInterval(resubscribeInterval);
     httpSubscriptionResponseServer.close();
     http.request({
@@ -18,13 +22,14 @@ function Subscription(host, port, eventSub, callback) {
         'SID': sid
       }
     }, function(res) {
-      console.log('Unsubscribe: '+ res.statusCode);
+      emitter.emit('unsubscribed', { sid: sid });
     }).end();
   };
-
   portfinder.getPort(function (err, availablePort) {
     httpSubscriptionResponseServer = http.createServer();
-    httpSubscriptionResponseServer.on('request', callback);
+    httpSubscriptionResponseServer.on('request', function(req) {
+      emitter.emit('message', { sid: sid, body: req.body });
+    });
     httpSubscriptionResponseServer.listen(availablePort, function() {
       http.request({
         host: host,
@@ -37,7 +42,7 @@ function Subscription(host, port, eventSub, callback) {
           'TIMEOUT': 'Second-' + timeoutSeconds
         }
       }, function(res) {
-        console.log('Subscribe: '+ res.statusCode + '; sid: ' + res.headers.sid);
+        emitter.emit('subscribed', { sid: res.headers.sid });
         sid = res.headers.sid;
       }).end();
     });
@@ -52,9 +57,10 @@ function Subscription(host, port, eventSub, callback) {
           'TIMEOUT': 'Second-' + timeoutSeconds
         }
       }, function(res) {
-        console.log('Resubscribe: '+ res.statusCode);
+        emitter.emit('resubscribed', { sid: sid });
       }).end();
     }, (timeoutSeconds-1) * 1000)
   });
 }
+util.inherits(Subscription, events.EventEmitter);
 module.exports = Subscription;
