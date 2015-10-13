@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "ip": "^1.0.1",
+    "portfinder": "^0.4.0"
+  },
+  "name": "node-upnp-subscription",
+  "description": "Upnp subscription library for Node, handling subscription, renewal and expiry.",
+  "version": "0.0.1",
+  "main": "index.js",
+  "directories": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com/bazwilliams/node-upnp-subscription.git"
+  },
+  "keywords": [
+    "node",
+    "upnp",
+    "subscription"
+  ],
+  "author": "Barry John Williams <barry@bjw.me.uk> (https://github.com/bazwilliams)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bazwilliams/node-upnp-subscription/issues"
+  },
+  "homepage": "https://github.com/bazwilliams/node-upnp-subscription"
+}
