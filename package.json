@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "ip": "^1.0.1",
+    "parsexmlresponse": "^0.0.2",
     "portfinder": "^0.4.0"
   },
   "name": "node-upnp-subscription",
