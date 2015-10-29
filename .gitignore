@@ -18,20 +18,11 @@ coverage
 
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
-build
-obj
-bin
-deb-src
 
 # Dependency directory
-# Deployed apps should consider commenting this line out:
-# see https://npmjs.org/doc/faq.html#Should-I-check-my-node_modules-folder-into-git
+# Commenting this out is preferred by some people, see
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
 node_modules
-bower_components
 
-# node-persist data
-persist
-
-# Node tools stuff
-.ntvs_analysis.dat*
-.idea/workspace.xml
+# Users Environment Variables
+.lock-wscript

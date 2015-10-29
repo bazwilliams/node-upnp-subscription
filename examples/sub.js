@@ -14,6 +14,22 @@ function logEvent(data) {
     console.log(JSON.stringify(data.body));
 }
 
+function processTime(callback) {
+    return function parseTimeEvent(data) {
+        if (data.body['e:propertyset']['e:property']) {
+            if (data.body['e:propertyset']['e:property'].Seconds) {
+                callback(null, { time: data.body['e:propertyset']['e:property'].Seconds });
+            } else if (data.body['e:propertyset']['e:property'].Standby) {
+		callback(null, { standby: data.body['e:propertyset']['e:property'] ? true : false });
+            } else {
+                callback(new Error('No time found'), JSON.stringify(data.body['e:propertyset']['e:property']));
+            }
+        } else {
+            callback(new Error('No data found'), JSON.stringify(data.body['e:propertyset']['e:property']));
+        }
+    };
+}
+
 function processInfo(callback) {
     return function parseInfoEvent(data) {
         if (data.body['e:propertyset']['e:property']) {
@@ -35,20 +51,21 @@ function processInfo(callback) {
                 callback(new Error('No metadata found'), JSON.stringify(data.body['e:propertyset']['e:property']));
             }
         } else {
-            callback(new Error('No track found'), JSON.stringify(data.body['e:propertyset']['e:property']));
+            callback(new Error('No data found'), JSON.stringify(data.body['e:propertyset']['e:property']));
         }
     };
 }
 
-var host = '192.168.1.129';
+var host = '192.168.1.122';
 var port = 55178;
 var infoSubUri = '/Ds/Info/event';
-var productSubUri = '/Ds/Product/event';
+//var productSubUri = '/Ds/Product/event';
+var timeSubUri = '/Ds/Time/event';
 
 var infoSub = new Subscription(host, port, infoSubUri);
 infoSub.on('message', processInfo(console.log));
-var productSub = new Subscription(host, port, productSubUri);
-productSub.on('message', processInfo(console.log));
+var timeSub = new Subscription(host, port, timeSubUri);
+timeSub.on('message', processTime(console.log));
 
-setTimeout(infoSub.unsubscribe, 120000);
-setTimeout(productSub.unsubscribe, 120000);
+setTimeout(infoSub.unsubscribe, 12000);
+setTimeout(timeSub.unsubscribe, 12000);
