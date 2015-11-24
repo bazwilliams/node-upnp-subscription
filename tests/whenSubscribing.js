@@ -12,7 +12,7 @@ const expectedSid = '54';
 
 describe('When subscribing', function () {
     let subscription, mockedUpnpDevice, sid;
-    beforeEach(function (done) {
+    before(function (done) {
         mockedUpnpDevice = nock(`http://${host}:${port}`)
             .persist()
             .intercept(uri, 'SUBSCRIBE')
@@ -25,7 +25,7 @@ describe('When subscribing', function () {
             done();
         });
     });
-    afterEach(function() {
+    after(function() {
         subscription.unsubscribe();
     });
     after(function() {

@@ -12,7 +12,7 @@ const expectedErrorMessage = 'something awful happened';
 
 describe('When subscribe fails', function () {
     let subscription, mockedUpnpDevice, error;
-    beforeEach(function (done) {
+    before(function (done) {
         mockedUpnpDevice = nock(`http://${host}:${port}`)
             .intercept(uri, 'SUBSCRIBE')
             .replyWithError(expectedErrorMessage);
@@ -22,7 +22,7 @@ describe('When subscribe fails', function () {
             done();
         });
     });
-    afterEach(function() {
+    after(function() {
         nock.cleanAll();
     });
     it('Should emit an error event with the error', function () {

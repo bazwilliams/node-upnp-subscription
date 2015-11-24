@@ -45,7 +45,7 @@ On unsubscribe, the resubscribe timer will be cancelled and the listening HTTP s
 
 ### Resubscribe
 
-* `resubscribe` - Will return the `sid`
+* `resubscribed` - Will return the `sid`
 * `error` - Will return both the `sid` of the subscription and the HTTP error object. 
  
 ### Unsubscribe
