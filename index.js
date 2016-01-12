@@ -14,19 +14,23 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
     this.unsubscribe = function unsubscribe() {
         clearInterval(resubscribeInterval);
         httpSubscriptionResponseServer.close();
-        http.request({
-            host: host,
-            port: port,
-            path: eventSub,
-            method: 'UNSUBSCRIBE',
-            headers: {
-                'SID': sid
-            }
-        }, function(res) {
-            emitter.emit('unsubscribed', { sid: sid });
-        }).on('error', function(e) {
-            emitter.emit('error', e);
-        }).end();
+        if (sid) {
+            http.request({
+                host: host,
+                port: port,
+                path: eventSub,
+                method: 'UNSUBSCRIBE',
+                headers: {
+                    'SID': sid
+                }
+            }, function(res) {
+                emitter.emit('unsubscribed', { sid: sid });
+            }).on('error', function(e) {
+                emitter.emit('error', e);
+            }).end();
+        } else {
+            emitter.emit('error', new Error('No SID for subscription'));
+        }
     };
     portfinder.getPort(function (err, availablePort) {
         httpSubscriptionResponseServer = http.createServer();
