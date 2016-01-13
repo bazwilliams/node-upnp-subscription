@@ -56,15 +56,15 @@ function processInfo(callback) {
     };
 }
 
-var host = '192.168.1.122';
+var host = '192.168.1.164';
 var port = 55178;
 var infoSubUri = '/Ds/Info/event';
 //var productSubUri = '/Ds/Product/event';
 var timeSubUri = '/Ds/Time/event';
 
-var infoSub = new Subscription(host, port, infoSubUri);
+var infoSub = new Subscription(host, port, infoSubUri, 1000);
 infoSub.on('message', processInfo(console.log));
-var timeSub = new Subscription(host, port, timeSubUri);
+var timeSub = new Subscription(host, port, timeSubUri, 1000);
 timeSub.on('message', processTime(console.log));
 
 setTimeout(infoSub.unsubscribe, 12000);
