@@ -8,7 +8,12 @@ let events = require('events');
 let xmlResponseParser = require('parsexmlresponse');
 
 function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
-    let sid, resubscribeTimeout, httpSubscriptionResponseServer, emitter, timeoutSeconds = requestedTimeoutSeconds || 1800;
+    let sid,
+        resubscribeTimeout,
+        httpSubscriptionResponseServer,
+        emitter = this,
+        timeoutSeconds = requestedTimeoutSeconds || 1800;
+    events.EventEmitter.call(this);
     function resubscribe() {
         if (sid) {
             var req = http.request({
@@ -28,8 +33,31 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
             }).end();
         }
     }
-    events.EventEmitter.call(this);
-    emitter = this;
+    function subscribe(availablePort) {
+        http.request({
+            host: host,
+            port: port,
+            path: eventSub,
+            method: 'SUBSCRIBE',
+            headers: {
+                'CALLBACK': "<http://" + ip.address() + ':' + availablePort + ">",
+                'NT': 'upnp:event',
+                'TIMEOUT': 'Second-' + timeoutSeconds
+            }
+        }, function(res) {
+            emitter.emit('subscribed', { sid: res.headers.sid });
+            sid = res.headers.sid;
+            if (res.headers.timeout) {
+                let subscriptionTimeout = res.headers.timeout.match(/\d+/);
+                if (subscriptionTimeout) {
+                    timeoutSeconds = subscriptionTimeout[0];
+                }
+            }
+            resubscribeTimeout = setTimeout(resubscribe, (timeoutSeconds-1) * 1000)
+        }).on('error', function(e) {
+            emitter.emit('error', e);
+        }).end();
+    }
     this.unsubscribe = function unsubscribe() {
         clearTimeout(resubscribeTimeout);
         httpSubscriptionResponseServer.close();
@@ -53,34 +81,10 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
     };
     portfinder.getPort(function (err, availablePort) {
         httpSubscriptionResponseServer = http.createServer();
-        httpSubscriptionResponseServer.on('request', xmlResponseParser(function (err, data) {
+        httpSubscriptionResponseServer.on('request', xmlResponseParser((err, data) => {
             emitter.emit('message', { sid: sid, body: data });
         }));
-        httpSubscriptionResponseServer.listen(availablePort, function() {
-            http.request({
-                host: host,
-                port: port,
-                path: eventSub,
-                method: 'SUBSCRIBE',
-                headers: {
-                    'CALLBACK': "<http://" + ip.address() + ':' + availablePort + ">",
-                    'NT': 'upnp:event',
-                    'TIMEOUT': 'Second-' + timeoutSeconds
-                }
-            }, function(res) {
-                emitter.emit('subscribed', { sid: res.headers.sid });
-                sid = res.headers.sid;
-                if (res.headers.timeout) {
-                    let subscriptionTimeout = res.headers.timeout.match(/\d+/);
-                    if (subscriptionTimeout) {
-                        timeoutSeconds = subscriptionTimeout[0];
-                    }
-                }
-                resubscribeTimeout = setTimeout(resubscribe, (timeoutSeconds-1) * 1000)
-            }).on('error', function(e) {
-                emitter.emit('error', e);
-            }).end();
-        });
+        httpSubscriptionResponseServer.listen(availablePort, () => subscribe(availablePort));
     });
 }
 util.inherits(Subscription, events.EventEmitter);
