@@ -28,9 +28,9 @@ setTimeout(infoSub.unsubscribe, 12000);
 
 ### Construction
 
-On construction, a local HTTP server will begin to listen on a random port and a subscribe request will be made to the Upnp device advertising this address and a resubscribe timer is set. If the subscribe attempt fails, the resubscribe interval is not cancelled. When a response is received, the subscription Id `sid` is returned in an event. 
+On construction, a local HTTP server will begin to listen on a random port and a subscribe request will be made to the Upnp device advertising this address and a resubscribe timer is set. The timeout value is replaced with the value returned in the subcription response which may differ to your requested resubscribe timeout. A resubscription timer is set to resubscribe after a successful subscription attempt. When a response is received, the subscription Id `sid` is returned in an event. 
 
-The resubscribe timer will cause a subscribe attempt to be resent to keep the Upnp subscription alive. If this fails for any reason an event is emitted, but the resubscribe interval will not be cancelled. 
+The resubscribe timer will cause a subscribe attempt to be resent to keep the Upnp subscription alive. If this is successful, a timer is set to resubscribe.
 
 ### Unsubscribe
 
@@ -42,13 +42,16 @@ On unsubscribe, the resubscribe timer will be cancelled and the listening HTTP s
 
 * `subscribed` - Will return the `sid`
 * `error` - Will return the error object which occured during subscribe attempt. 
+* `error:subscribe` - Will return the error object which occured during subscribe attempt. 
 
 ### Resubscribe
 
 * `resubscribed` - Will return the `sid`
 * `error` - Will return both the `sid` of the subscription and the HTTP error object. 
+* `error:resubscribe` - Will return both the `sid` of the subscription and the HTTP error object. 
  
 ### Unsubscribe
 
 * `unsubscribed` - Will return the now defunct `sid`
 * `error` - Will return the HTTP error object.
+* `error:unsubscribe` - Will return the HTTP error object.
