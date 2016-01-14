@@ -76,6 +76,7 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
                 emitter.emit('unsubscribed', { sid: sid });
             }).on('error', function(e) {
                 emitter.emit('error', e);
+                emitter.emit('error:unsubscribe', e);
             }).end();
         } else {
             emitter.emit('error', new Error('No SID for subscription'));
