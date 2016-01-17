@@ -20,7 +20,7 @@ describe('When subscribed and resubscribe fails', function () {
             .intercept(uri, 'SUBSCRIBE')
             .replyWithError(expectedErrorMessage);
         subscription = new Subscription(host, port, uri, 1.2);
-        subscription.on('error', function (payload) {
+        subscription.on('error:resubscribe', function (payload) {
             sid = payload.sid;
 	    error = payload.error;
             done();

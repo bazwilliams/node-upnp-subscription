@@ -17,13 +17,12 @@ describe('When subscribe failed and then unsubscribing', function () {
             .intercept(uri, 'SUBSCRIBE')
             .replyWithError(expectedErrorMessage);
         subscription = new Subscription(host, port, uri, 1.2);
-        subscription.on('error', (payload) => {
+	subscription.on('error:unsubscribe', (payload) => {
             error = payload;
-            if (error.message === expectedErrorMessage) {
-                subscription.unsubscribe();
-            } else {
-                done();
-            }
+            done();
+	});
+        subscription.on('error', (payload) => {
+            subscription.unsubscribe();
         });
     });
     it('Should emit an error event with the error', function () {
