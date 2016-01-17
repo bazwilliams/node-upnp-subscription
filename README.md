@@ -42,16 +42,13 @@ On unsubscribe, the resubscribe timer will be cancelled and the listening HTTP s
 
 * `subscribed` - Will return the `sid`
 * `error` - Will return the error object which occured during subscribe attempt. 
-* `error:subscribe` - Will return the error object which occured during subscribe attempt. 
 
 ### Resubscribe
 
 * `resubscribed` - Will return the `sid`
-* `error` - Will return both the `sid` of the subscription and the HTTP error object. 
 * `error:resubscribe` - Will return both the `sid` of the subscription and the HTTP error object. 
  
 ### Unsubscribe
 
 * `unsubscribed` - Will return the now defunct `sid`
-* `error` - Will return the HTTP error object.
 * `error:unsubscribe` - Will return the HTTP error object.
