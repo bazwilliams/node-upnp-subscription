@@ -7,10 +7,29 @@ let util = require('util');
 let events = require('events');
 let xmlResponseParser = require('parsexmlresponse');
 
+let httpServerPort;
+let httpSubscriptionResponseServer;
+
+let subscriptions = new Map();
+
+portfinder.getPort(function (err, availablePort) {
+    httpSubscriptionResponseServer = http.createServer();
+    httpServerPort = availablePort;
+    httpSubscriptionResponseServer.listen(httpServerPort, () => {
+        httpSubscriptionResponseServer.on('request', (req) => {
+            let sid = req.headers.sid;
+            let handle = xmlResponseParser((err, data) => {
+                let emitter = subscriptions.get(sid);
+                emitter.emit('message', { sid: sid, body: data });
+            });
+            handle(req);
+        });
+    });
+});
+
 function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
     let sid,
         resubscribeTimeout,
-        httpSubscriptionResponseServer,
         emitter = this,
         timeoutSeconds = requestedTimeoutSeconds || 1800;
     events.EventEmitter.call(this);
@@ -33,14 +52,14 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
             }).end();
         }
     }
-    function subscribe(availablePort) {
+    function subscribe() {
         http.request({
             host: host,
             port: port,
             path: eventSub,
             method: 'SUBSCRIBE',
             headers: {
-                'CALLBACK': "<http://" + ip.address() + ':' + availablePort + ">",
+                'CALLBACK': "<http://" + ip.address() + ':' + httpServerPort + ">",
                 'NT': 'upnp:event',
                 'TIMEOUT': 'Second-' + timeoutSeconds
             }
@@ -53,14 +72,15 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
                     timeoutSeconds = subscriptionTimeout[0];
                 }
             }
-            resubscribeTimeout = setTimeout(resubscribe, (timeoutSeconds-1) * 1000)
+            resubscribeTimeout = setTimeout(resubscribe, (timeoutSeconds-1) * 1000);
+            subscriptions.set(sid, emitter);
         }).on('error', function(e) {
             emitter.emit('error', e);
+            subscriptions.delete(sid);
         }).end();
     }
     this.unsubscribe = function unsubscribe() {
         clearTimeout(resubscribeTimeout);
-        httpSubscriptionResponseServer.close();
         if (sid) {
             http.request({
                 host: host,
@@ -78,14 +98,9 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
         } else {
             emitter.emit('error:unsubscribe', new Error('No SID for subscription'));
         }
+        subscriptions.delete(sid);
     };
-    portfinder.getPort(function (err, availablePort) {
-        httpSubscriptionResponseServer = http.createServer();
-        httpSubscriptionResponseServer.on('request', xmlResponseParser((err, data) => {
-            emitter.emit('message', { sid: sid, body: data });
-        }));
-        httpSubscriptionResponseServer.listen(availablePort, () => subscribe(availablePort));
-    });
+    subscribe();
 }
 util.inherits(Subscription, events.EventEmitter);
 module.exports = Subscription;

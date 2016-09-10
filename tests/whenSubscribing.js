@@ -27,8 +27,6 @@ describe('When subscribing', function () {
     });
     after(function() {
         subscription.unsubscribe();
-    });
-    after(function() {
         nock.cleanAll();
     });
     it('Should emit a subscribed event with the correct SID', function () {

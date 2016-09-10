@@ -56,7 +56,7 @@ function processInfo(callback) {
     };
 }
 
-var host = '192.168.1.164';
+var host = '192.168.1.157';
 var port = 55178;
 var infoSubUri = '/Ds/Info/event';
 //var productSubUri = '/Ds/Product/event';
