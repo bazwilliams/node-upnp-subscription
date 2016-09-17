@@ -11,9 +11,16 @@ const uri = '/info';
 const expectedSid = '54';
 
 describe('When subscribed and resubscribing', function () {
-    let subscription, mockedUpnpDevice, sid;
+    let subscription, mockedUpnpDevice, sid, timeoutHeader;
     before(function (done) {
-        mockedUpnpDevice = nock(`http://${host}:${port}`)
+        mockedUpnpDevice = nock(`http://${host}:${port}`, {
+                reqheaders: {
+                    'TIMEOUT': function (headerValue) {
+                        timeoutHeader = headerValue;
+                        return true;
+                    }
+                }
+            })
             .persist()
             .intercept(uri, 'SUBSCRIBE')
             .reply(200, {}, { sid: expectedSid })
@@ -33,5 +40,8 @@ describe('When subscribed and resubscribing', function () {
     });
     it('Should emit a resubscribed event with the correct SID', function () {
         expect(sid).to.be.eql(expectedSid);
+    });
+    it('Should send the timeout value', function () {
+        expect(timeoutHeader).to.be.eql('Second-1.2');
     });
 });
