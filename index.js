@@ -5,35 +5,28 @@ let portfinder = require('portfinder');
 let ip = require('ip');
 let util = require('util');
 let events = require('events');
-let xml = require('xml2js');
+let xmlResponseParser = require('parsexmlresponse');
 
 let httpServerPort;
+let httpSubscriptionResponseServer;
 
 let subscriptions = new Map();
 
 portfinder.getPort(function (err, availablePort) {
-    httpServerPort = availablePort
-    http.createServer(function (req, res) {
-      var buffer = ''
-      req.on('data', function (d) {
-        buffer += d
-      })
-
-      req.on('end', function () {
-        req.body = buffer
-
-        let sid = req.headers.sid;
-
-        xml.parseString(req.body, (err, result) => {
-            let emitter = subscriptions.get(sid);
-            if (emitter) {
-                emitter.emit('message', { sid: sid, body: result });
-            }
-        })
-
-        res.end()
-      })
-    }).listen(httpServerPort)
+    httpSubscriptionResponseServer = http.createServer();
+    httpServerPort = availablePort;
+    httpSubscriptionResponseServer.listen(httpServerPort, () => {
+        httpSubscriptionResponseServer.on('request', (req) => {
+            let sid = req.headers.sid;
+            let handle = xmlResponseParser((err, data) => {
+                let emitter = subscriptions.get(sid);
+                if (emitter) {
+                    emitter.emit('message', { sid: sid, body: data });
+                }
+            });
+            handle(req);
+        });
+    });
 });
 
 function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
