@@ -7,29 +7,35 @@ let util = require('util');
 let events = require('events');
 let xmlResponseParser = require('parsexmlresponse');
 
+var httpServerStarted;
 let httpServerPort;
 let httpSubscriptionResponseServer;
 
 let subscriptions = new Map();
 
-portfinder.getPort(function (err, availablePort) {
-    httpSubscriptionResponseServer = http.createServer();
-    httpServerPort = availablePort;
-    httpSubscriptionResponseServer.listen(httpServerPort, () => {
-        httpSubscriptionResponseServer.on('request', (req, res) => {
-            let sid = req.headers.sid;
-            let handle = xmlResponseParser((err, data) => {
-                let emitter = subscriptions.get(sid);
-                if (emitter) {
-                    emitter.emit('message', { sid: sid, body: data });
-                }
+let startHttpServer = function () {
+    httpServerStarted = true
+    portfinder.getPort(function (err, availablePort) {
+        httpSubscriptionResponseServer = http.createServer();
+        httpServerPort = availablePort;
+        httpSubscriptionResponseServer.listen(httpServerPort, () => {
+            console.log('listening on: ' + httpServerPort)
+            httpSubscriptionResponseServer.on('request', (req, res) => {
+                let sid = req.headers.sid;
+                let handle = xmlResponseParser((err, data) => {
+                    let emitter = subscriptions.get(sid);
+                    if (emitter) {
+                        emitter.emit('message', { sid: sid, body: data });
+                    }
+                });
+                handle(req, res);
             });
-            handle(req, res);
         });
     });
-});
+};
 
 function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
+    if (module.parent && !httpServerStarted) { startHttpServer() }
     let sid,
         resubscribeTimeout,
         emitter = this,
@@ -104,3 +110,7 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
 }
 util.inherits(Subscription, events.EventEmitter);
 module.exports = Subscription;
+
+if (!module.parent && !httpServerStarted) {
+    startHttpServer()
+}
