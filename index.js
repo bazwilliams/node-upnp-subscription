@@ -16,7 +16,7 @@ portfinder.getPort(function (err, availablePort) {
     httpSubscriptionResponseServer = http.createServer();
     httpServerPort = availablePort;
     httpSubscriptionResponseServer.listen(httpServerPort, () => {
-        httpSubscriptionResponseServer.on('request', (req) => {
+        httpSubscriptionResponseServer.on('request', (req, res) => {
             let sid = req.headers.sid;
             let handle = xmlResponseParser((err, data) => {
                 let emitter = subscriptions.get(sid);
@@ -24,7 +24,7 @@ portfinder.getPort(function (err, availablePort) {
                     emitter.emit('message', { sid: sid, body: data });
                 }
             });
-            handle(req);
+            handle(req, res);
         });
     });
 });
