@@ -1,12 +1,12 @@
 {
   "dependencies": {
     "ip": "^1.0.1",
-    "parsexmlresponse": "^0.0.3",
+    "parsexmlresponse": "^0.0.4",
     "portfinder": "^0.4.0"
   },
   "name": "node-upnp-subscription",
   "description": "Upnp subscription library for Node, handling subscription, renewal and expiry.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.js",
   "directories": {},
   "devDependencies": {
