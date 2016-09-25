@@ -1,6 +1,7 @@
 "use strict";
 
 let Subscription = require('../index.js');
+let async = require('async');
 let nock = require('nock');
 let chai = require('chai');
 let expect = chai.expect;
@@ -20,6 +21,7 @@ const expectedSid2 = '55';
 describe('When handling multiple subscriptions', function () {
     let subscription1, subscription2, mockedUpnpDevice1, mockedUpnpDevice2, sid1, sid2, responseServer1, responseServer2;
     before(function (done) {
+        this.timeout(4000)
         mockedUpnpDevice1 = nock(`http://${host1}:${port1}`, {
                 reqheaders: {
                     'CALLBACK': function (headerValue) {
@@ -49,20 +51,27 @@ describe('When handling multiple subscriptions', function () {
         subscription1 = new Subscription(host1, port1, uri1, 1.2);
         subscription2 = new Subscription(host2, port2, uri2, 1.2);
         let sub1, sub2;
-        subscription1.on('subscribed', function(payload) {
-            sid1 = payload.sid;
-            if (sub2) {
-                done();
-            } else {
-                sub1 = true;
+
+        async.parallel({
+            subscription1: function(callback) {
+                subscription1.on('subscribed', function(payload) {
+                    console.log('subscribed')
+                    sid1 = payload.sid;
+
+                    callback(null, true);
+                });
+            },
+            subscription2: function(callback) {
+                subscription2.on('subscribed', function(payload) {
+                    console.log('subscribed')
+                    sid2 = payload.sid;
+
+                    callback(null, true);
+                });
             }
-        });
-        subscription2.on('subscribed', function(payload) {
-            sid2 = payload.sid;
-            if (sub1) {
+        }, function(err, results) {
+            if (results.subscription1 && results.subscription2) {
                 done();
-            } else {
-                sub2 = true;
             }
         });
     });

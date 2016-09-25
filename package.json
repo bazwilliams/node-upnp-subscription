@@ -6,10 +6,11 @@
   },
   "name": "node-upnp-subscription",
   "description": "Upnp subscription library for Node, handling subscription, renewal and expiry.",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "main": "index.js",
   "directories": {},
   "devDependencies": {
+    "async": "^2.0.1",
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
     "nock": "^3.1.1"
