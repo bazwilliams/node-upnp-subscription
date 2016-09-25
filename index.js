@@ -7,10 +7,10 @@ let util = require('util');
 let events = require('events');
 let xmlResponseParser = require('parsexmlresponse');
 
-var httpServerEmitter = new events();
-var httpServerStarting = false;
-var httpServerStarted = false;
-var httpServerPort;
+let httpServerEmitter = new events();
+let httpServerStarting = false;
+let httpServerStarted = false;
+let httpServerPort;
 let httpSubscriptionResponseServer;
 
 let subscriptions = new Map();
