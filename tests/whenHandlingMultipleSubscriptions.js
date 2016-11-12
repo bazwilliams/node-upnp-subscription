@@ -55,17 +55,13 @@ describe('When handling multiple subscriptions', function () {
         async.parallel({
             subscription1: function(callback) {
                 subscription1.on('subscribed', function(payload) {
-                    console.log('subscribed')
                     sid1 = payload.sid;
-
                     callback(null, true);
                 });
             },
             subscription2: function(callback) {
                 subscription2.on('subscribed', function(payload) {
-                    console.log('subscribed')
                     sid2 = payload.sid;
-
                     callback(null, true);
                 });
             }

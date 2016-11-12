@@ -1,13 +1,15 @@
 "use strict";
 
-let http = require('http');
-let portfinder = require('portfinder');
-let ip = require('ip');
-let util = require('util');
-let events = require('events');
-let xmlResponseParser = require('parsexmlresponse');
+const http = require('http');
+const portfinder = require('portfinder');
+const ip = require('ip');
+const util = require('util');
+const events = require('events');
+const xmlResponseParser = require('parsexmlresponse');
 
 let httpServerEmitter = new events();
+httpServerEmitter.setMaxListeners(100);
+
 let httpServerStarting = false;
 let httpServerStarted = false;
 let httpServerPort;
@@ -17,9 +19,9 @@ let subscriptions = new Map();
 
 let ensureHttpServer = function (callback) {
     if (httpServerStarting) {
-        httpServerEmitter.on('started', callback)
+        httpServerEmitter.once('started', callback)
     } else {
-        httpServerStarting = true
+        httpServerStarting = true;
         portfinder.getPort(function (err, availablePort) {
             httpSubscriptionResponseServer = http.createServer();
             httpServerPort = availablePort;
@@ -88,9 +90,9 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
             emitter.emit('error:unsubscribe', new Error('No SID for subscription'));
         }
         subscriptions.delete(sid);
-    }.bind(this)
+    }.bind(this);
 
-    this.init = function init () {
+    this.init = function () {
         http.request({
             host: host,
             port: port,
@@ -117,7 +119,7 @@ function Subscription(host, port, eventSub, requestedTimeoutSeconds) {
             subscriptions.delete(sid);
         }).end();
         events.EventEmitter.call(this);
-    }.bind(this)
+    }.bind(this);
 
     if (!httpServerStarted) {
         ensureHttpServer(this.init)
